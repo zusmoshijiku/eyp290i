@@ -68,6 +68,7 @@ sum(is.na(mensual$mp25_mes))
 # Serie de tiempo con los meses sin dato como NA
 
 y_na <- ts(mensual$mp25_mes, start = c(2000, 1), frequency = 12)
+y_na <- window(y_na, start = c(2000, 1), end = c(2022, 12))
 
 plot(y_na, main = "Serie de tiempo mensual de mp2.5 con NA",
      ylab = "mp2.5", xlab = "Año")
@@ -94,7 +95,7 @@ per <- LSTS::periodogram(y, plot = TRUE)
 max(per$lambda) # = pi
 
 # Tendencia
-mensual$tendencia <- as.numeric(ma(x, order = 12))
+mensual$tendencia <- as.numeric(ma(y, order = 12))
 ggplot(mensual, aes(x = mes)) +
   geom_line(aes(y = mp25_completa), color = "grey70", linewidth = 0.5) +
   geom_line(aes(y = tendencia), color = "darkblue", linewidth = 0.9, na.rm = TRUE) +
@@ -104,11 +105,24 @@ ggplot(mensual, aes(x = mes)) +
 
 # Box-Cox
 
-lambda <- forecast::BoxCox.lambda(x)
-y.bc <- forecast::BoxCox(x, lambda = lambda)
-#graficar serie con transformación de box cox lambda = 0.24
-plot(y.bc, ylab = "", main = "Box-Cox(x), lambda = 0.24")
+lambda <- forecast::BoxCox.lambda(y)
+y.bc <- forecast::BoxCox(y, lambda = lambda)
+#graficar serie con transformación de box cox lambda = 0.06
+plot(y.bc, ylab = "", main = "Box-Cox(x), lambda = 0.06")
 
-adf.test(y.bc)
+adf.test(y.bc, k = 12)
 pp.test(y.bc)
-kpss.test(y.bc)
+kpss.test(y.bc, null = "Trend")
+
+# efecto de la diferenciación
+
+xs <- diff(y.bc, lag = 12)
+
+adf.test(xs)
+pp.test(xs)
+kpss.test(xs, null = "Level")
+kpss.test(xs, null = "Trend")
+nsdiffs(xs)
+ndiffs(xs, test = "adf", type = "level")
+
+# no es necesario seguir diferenciando.
