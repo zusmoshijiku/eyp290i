@@ -1,4 +1,5 @@
 library(dplyr)
+library(lubridate)
 
 #deje la proporcion min. de días con dato para aceptar el promedio de un mes
 #asi solo hay 5 meses con datos faltantes: enero, febrero, marzo y abril 2001, y noviembre 2013
@@ -51,14 +52,14 @@ sum(is.na(mensual$mp25_mes))
 #Serie de tiempo con los meses sin dato como NA
 y_na <- ts(mensual$mp25_mes, start = c(2000, 1), frequency = 12)
 
-plot(y_na)
+plot(y_na, main = "Serie de tiempo mensual de mp2.5 con NA", ylab = "mp2.5", xlab = "Año")
 
 Y <- forecast::na.interp(y_na) # Interpola usando forecast que toma en cuenta la estacionalidad
 
-plot(Y)
+plot(Y, main = "Serie de tiempo mensual de mp2.5 interpolada", ylab = "mp2.5", xlab = "Año")
 
 # ACF y PACF
-par(mfrow = c(2, 1))
+par(mfrow = c(1, 2))
 acf(Y, lag.max = 24, main = "ACF mp2.5 mensual")
 pacf(Y, lag.max = 24, main = "PACF mp2.5 mensual")
 
